@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>User Products</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .container {
+            margin-top: 50px;
+        }
+
+        .card {
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="../Scripts/jwt-decode.js"></script>
+    <script>
+
+        //if (userType != "Administrator") {
+        //    alert("Only administrators can access this page.");
+        //    window.location.href = "Main.html";
+        //}
+
+        var token = localStorage.getItem("token");
+        var decodedToken = jwt_decode(token);
+        var username = decodedToken.Name;
+
+        $(document).ready(function () {
+            console.log(username);
+            $.ajax({
+                url: '/api/prodavci/GetProizvodi?username=' + username,
+                type: "GET",
+                success: function (response) {
+                    $("#productList").empty();
+
+                    $.each(response, function (index, product) {
+                        var cardHtml = '<div class="card">' +
+                            '<div class="card-header">' + product.Name + '</div>' +
+                            '<div class="card-body">' +
+                            '<p>Price: ' + product.Price + '</p>' +
+                            '<p>Description: ' + product.Description + '</p>' +
+                            '<p>Image: <img src="' + product.ImageUrl + '" alt="Product Image" width="200"></p>' +
+                            '</div>' +
+                            '</div>';
+
+                        $("#productList").append(cardHtml);
+                    });
+                },
+                error: function (xhr, textStatus, error) {
+                    alert("Failed to retrieve user products: " + error);
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">User Products</h1>
+        <div id="productList"></div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Search and Sorting</title>
+    <link href="../Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="../Scripts/jquery-3.4.1.min.js"></script>
+    <script src="../Scripts/bootstrap.min.js"></script>
+</head>
+<body>
+    <h1>Product Search and Sorting</h1>
+
+    <div>
+        <label for="name">Name:</label>
+        <input type="text" id="name" />
+    </div>
+
+    <div>
+        <label for="minPrice">Minimum Price:</label>
+        <input type="number" id="minPrice" />
+    </div>
+
+    <div>
+        <label for="maxPrice">Maximum Price:</label>
+        <input type="number" id="maxPrice" />
+    </div>
+
+    <div>
+        <label for="city">City:</label>
+        <input type="text" id="city" />
+    </div>
+
+    <div>
+        <label for="sortBy">Sort By:</label>
+        <select id="sortBy">
+            <option value="">None</option>
+            <option value="nameasc">Name (Ascending)</option>
+            <option value="namedesc">Name (Descending)</option>
+            <option value="priceasc">Price (Ascending)</option>
+            <option value="pricedesc">Price (Descending)</option>
+            <option value="dateasc">Date (Ascending)</option>
+            <option value="datedesc">Date (Descending)</option>
+        </select>
+    </div>
+
+    <button id="searchBtn">Search</button>
+
+    <div id="resultContainer"></div>
+
+    <script>
+        $(document).ready(function () {
+            function searchAndSortProducts() {
+                var searchParams = {
+                    name: $('#name').val(),
+                    minPrice: $('#minPrice').val(),
+                    maxPrice: $('#maxPrice').val(),
+                    city: $('#city').val(),
+                    sortBy: $('#sortBy').val()
+                };
+
+                // Remove null or empty values from searchParams
+                Object.keys(searchParams).forEach(function (key) {
+                    if (searchParams[key] === null || searchParams[key] === "") {
+                        delete searchParams[key];
+                    }
+                });
+
+                $.ajax({
+                    url: '/api/proizvodi/search',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: searchParams,
+                    success: function (data) {
+                        // 'data' will contain the response from the server
+
+                        // Clear previous results
+                        $('#resultContainer').empty();
+
+                        // Display the filtered and sorted products
+                        $.each(data, function (index, product) {
+                            var productElement = $('<div></div>');
+                            productElement.append('<p><strong>ID:</strong> ' + product.Id + '</p>');
+                            productElement.append('<p><strong>Name:</strong> ' + product.Ime + '</p>');
+                            productElement.append('<p><strong>Price:</strong> ' + product.Cena + '</p>');
+                            productElement.append('<p><strong>Quantity:</strong> ' + product.Kolicina + '</p>');
+                            productElement.append('<hr>');
+
+                            $('#resultContainer').append(productElement);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle the error if the request fails
+                        console.error(xhr.responseText);
+                    }
+                });
+            }
+
+            // Trigger search and sorting when the search button is clicked
+            $('#searchBtn').click(function () {
+                searchAndSortProducts();
+            });
+
+            // Trigger search and sorting when any input value changes
+            $('input, select').on('change', function () {
+                searchAndSortProducts();
+            });
+        });
+    </script>
+</body>
+</html>

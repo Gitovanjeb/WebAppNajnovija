@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Management</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .card {
+            margin: 0 auto;
+            margin-top: 50px;
+            max-width: 400px;
+        }
+    </style>
+    <script>
+        $(document).ready(function() {
+
+            $("#productForm").submit(function (event) {
+                event.preventDefault();
+
+                var formData = {
+                    Ime: $("#ime").val(),
+                    Cena: parseFloat($("#cena").val()),
+                    Kolicina: parseInt($("#kolicina").val()),
+                    Opis: $("#opis").val(),
+                    Slika: $("#slika").val(),
+                    Grad: $("#grad").val(),
+                };
+
+                $.ajax({
+                    url: "/api/proizvodi/dodajproizvod",
+                    type: "POST",
+                    data: JSON.stringify(formData),
+                    contentType: "application/json",
+                    success: function(response) {
+                        window.location.href = "Main.html";
+                    },
+                    error: function(xhr, textStatus, error) {
+                        alert("Product creation failed: " + error);
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="text-center">Create Product</h2>
+            </div>
+            <div class="card-body">
+                <form id="productForm">
+                    <div class="form-group">
+                        <label for="ime">Name:</label>
+                        <input type="text" id="ime" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="cena">Price:</label>
+                        <input type="number" id="cena" class="form-control" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="kolicina">Quantity:</label>
+                        <input type="number" id="kolicina" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="opis">Description:</label>
+                        <input type="text" id="opis" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="slika">Image:</label>
+                        <input type="text" id="slika" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="grad">City:</label>
+                        <input type="text" id="grad" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

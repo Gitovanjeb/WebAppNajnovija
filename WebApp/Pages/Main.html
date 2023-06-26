@@ -1,0 +1,114 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Search and Sorting</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Product Search and Sorting</h1>
+
+        <div class="row">
+            <div class="col-md-2 mb-3">
+                <label for="name" class="form-label">Name:</label>
+                <input type="text" class="form-control" id="name" />
+            </div>
+            <div class="col-md-2 mb-3">
+                <label for="minPrice" class="form-label">Minimum Price:</label>
+                <input type="number" class="form-control" id="minPrice" />
+            </div>
+            <div class="col-md-2 mb-3">
+                <label for="maxPrice" class="form-label">Maximum Price:</label>
+                <input type="number" class="form-control" id="maxPrice" />
+            </div>
+            <div class="col-md-2 mb-3">
+                <label for="city" class="form-label">City:</label>
+                <input type="text" class="form-control" id="city" />
+            </div>
+            <div class="col-md-2 mb-3">
+                <label for="sortBy" class="form-label">Sort By:</label>
+                <select class="form-select" id="sortBy">
+                    <option value="">None</option>
+                    <option value="nameasc">Name (Ascending)</option>
+                    <option value="namedesc">Name (Descending)</option>
+                    <option value="priceasc">Price (Ascending)</option>
+                    <option value="pricedesc">Price (Descending)</option>
+                    <option value="dateasc">Date (Ascending)</option>
+                    <option value="datedesc">Date (Descending)</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3 align-self-end">
+                <button id="searchBtn" class="btn btn-primary w-100">Search</button>
+            </div>
+        </div>
+
+        
+
+        <div id="resultContainer" class="row mt-4"></div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            function searchAndSortProducts() {
+                var searchParams = {
+                    name: $('#name').val(),
+                    minPrice: $('#minPrice').val(),
+                    maxPrice: $('#maxPrice').val(),
+                    city: $('#city').val(),
+                    sortBy: $('#sortBy').val()
+                };
+
+                // Remove null or empty values from searchParams
+                Object.keys(searchParams).forEach(function (key) {
+                    if (searchParams[key] === null || searchParams[key] === "") {
+                        delete searchParams[key];
+                    }
+                });
+
+                $.ajax({
+                    url: '/api/proizvodi/search',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: searchParams,
+                    success: function (data) {
+                        // 'data' will contain the response from the server
+
+                        // Clear previous results
+                        $('#resultContainer').empty();
+
+                        // Display the filtered and sorted products
+                        $.each(data, function (index, product) {
+                            var productCard = $('<div class="col-md-4 mb-4"></div>');
+                            var card = $('<div class="card border-primary"></div>');
+                            var cardBody = $('<div class="card-body"></div>');
+                            cardBody.append('<h5 class="card-title">' + product.Ime + '</h5>');
+                            cardBody.append('<p class="card-text"><strong>Price:</strong> ' + product.Cena + '</p>');
+                            cardBody.append('<p class="card-text"><strong>Quantity:</strong> ' + product.Kolicina + '</p>');
+                            card.append(cardBody);
+                            productCard.append(card);
+
+                            $('#resultContainer').append(productCard);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        // Handle the error if the request fails
+                        console.error(xhr.responseText);
+                    }
+                });
+            }
+
+            // Trigger search and sorting when the search button is clicked
+            $('#searchBtn').click(function () {
+                searchAndSortProducts();
+            });
+
+            // Trigger search and sorting when any input value changes
+            $('input, select').on('change', function () {
+                searchAndSortProducts();
+            });
+        });
+    </script>
+</body>
+</html>

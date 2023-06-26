@@ -1,0 +1,86 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Login Page</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#loginForm").submit(function (event) {
+                event.preventDefault();
+
+                // Collect form data
+                var formData = {
+                    username: $("#username").val(),
+                    password: $("#password").val()
+                };
+
+                // Send form data to the API
+                $.ajax({
+                    url: "/api/account/login",
+                    type: "POST",
+                    data: JSON.stringify(formData),
+                    contentType: "application/json",
+                    success: function (response) {
+                        // Handle successful login
+                        // Store the token in localStorage or session storage
+                        localStorage.setItem("token", response.token);
+                        // Redirect to the appropriate page based on the user type
+                        var userType = response.userType;
+                        switch (userType) {
+                            case "Kupac":
+                                window.location.href = "Main.html";
+                                break;
+                            case "Prodavac":
+                                window.location.href = "Main.html";
+                                break;
+                            case "Administrator":
+                                window.location.href = "Administrator.html";
+                                break;
+                            default:
+                                alert("Invalid user type.");
+                        }
+                    },
+                    error: function (xhr, textStatus, error) {
+                        // Handle login error
+                        alert("Login failed: " + error);
+                    }
+                });
+            });
+        });
+    </script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            width: 400px;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1 class="text-center">Login</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" class="form-control" id="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" class="form-control" id="password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Login</button>
+        </form>
+    </div>
+</body>
+</html>

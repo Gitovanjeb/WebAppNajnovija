@@ -1,0 +1,99 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Registration Form</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .card {
+            margin: 0 auto;
+            margin-top: 50px;
+            max-width: 400px;
+        }
+    </style>
+    <script>
+        $(document).ready(function () {
+            $("#registrationForm").submit(function (event) {
+                event.preventDefault();
+
+                // Collect form data
+                var formData = {
+                    KorisnickoIme: $("#korisnickoIme").val(),
+                    Lozinka: $("#lozinka").val(),
+                    Ime: $("#ime").val(),
+                    Prezime: $("#prezime").val(),
+                    Pol: $("#pol").val(),
+                    Email: $("#email").val(),
+                    DatumRodjenja: $("#datumRodjenja").val()
+                };
+
+                // Send form data to the API
+                $.ajax({
+                    url: "/api/account/register",
+                    type: "POST",
+                    data: JSON.stringify(formData),
+                    contentType: "application/json",
+                    success: function (response) {
+                        // Handle successful registration
+                        window.location.href = "Login.html";
+                    },
+                    error: function (xhr, textStatus, error) {
+                        // Handle registration error
+                        alert("Registration failed: " + error);
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="text-center">Registration Form</h1>
+            </div>
+            <div class="card-body">
+                <form id="registrationForm">
+                    <div class="form-group">
+                        <label for="korisnickoIme">Username:</label>
+                        <input type="text" class="form-control" id="korisnickoIme" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lozinka">Password:</label>
+                        <input type="password" class="form-control" id="lozinka" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ime">First Name:</label>
+                        <input type="text" class="form-control" id="ime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prezime">Last Name:</label>
+                        <input type="text" class="form-control" id="prezime" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="pol">Gender:</label>
+                        <select class="form-control" id="pol" required>
+                            <option value="Musko">Male</option>
+                            <option value="Zensko">Female</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="datumRodjenja">Date of Birth:</label>
+                        <input type="date" class="form-control" id="datumRodjenja" required>
+                    </div>
+                    <div class="form-group text-center">
+                        <input type="submit" class="btn btn-primary" value="Register">
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+

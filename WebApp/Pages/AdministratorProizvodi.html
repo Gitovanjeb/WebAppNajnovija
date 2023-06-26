@@ -1,0 +1,272 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Search and Sorting</title>
+    <link href="../Content/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        .form-row {
+            margin-bottom: 10px;
+        }
+    </style>
+    <script src="../Scripts/jquery-3.4.1.min.js"></script>
+    <script src="../Scripts/bootstrap.min.js"></script>
+</head>
+<body>
+    <h1>Product Search and Sorting</h1>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 form-row">
+                <label for="nameInput">Name:</label>
+                <input type="text" id="nameInput" class="form-control" />
+            </div>
+
+            <div class="col-md-2 form-row">
+                <label for="priceInput">Price:</label>
+                <input type="text" id="priceInput" class="form-control" />
+            </div>
+
+            <div class="col-md-2 form-row">
+                <label for="statusSelect">Status:</label>
+                <select id="statusSelect" class="form-control">
+                    <option value="">All</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 form-row">
+                <label>&nbsp;</label>
+                <button id="searchBtn" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+
+        <h3>Products</h3>
+        <table id="productTable" class="table table-bordered">
+            <thead>
+                <tr>
+                    <th class="sortable" data-sortby="Name">Name</th>
+                    <th class="sortable" data-sortby="Price">Price</th>
+                    <th class="sortable" data-sortby="PublishDate">Date of Publishing</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal for Product Update -->
+    <div class="modal fade" id="updateProductModal" tabindex="-1" role="dialog" aria-labelledby="updateProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateProductModalLabel">Update Product</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="updateProductId" />
+                    <div class="form-group">
+                        <label for="updateProductName">Name:</label>
+                        <input type="text" id="updateProductName" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="updateProductPrice">Price:</label>
+                        <input type="text" id="updateProductPrice" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="updateProductPublishDate">Date of Publishing:</label>
+                        <input type="date" id="updateProductPublishDate" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="updateProductStatus">Status:</label>
+                        <select id="updateProductStatus" class="form-control">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="updateProductBtn">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            function getProducts() {
+                var searchParams = {
+                    Name: $('#nameInput').val(),
+                    Price: $('#priceInput').val(),
+                    Status: $('#statusSelect').val()
+                };
+
+                $.ajax({
+                    url: '/api/ProductController/Search',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: searchParams,
+                    success: function (data) {
+                        var productTable = $('#productTable').find('tbody');
+                        productTable.empty();
+
+                        // Display the products in the table
+                        $.each(data, function (index, product) {
+                            var row = $('<tr></tr>');
+                            row.append('<td class="editable" data-field="Name">' + product.Name + '</td>');
+                            row.append('<td class="editable" data-field="Price">' + product.Price + '</td>');
+                            row.append('<td class="editable" data-field="PublishDate">' + product.PublishDate + '</td>');
+                            row.append('<td>' + product.Status + '</td>');
+
+                            var actionCell = $('<td></td>');
+
+                            var editBtn = $('<button class="btn btn-primary btn-sm editBtn">Edit</button>');
+                            editBtn.on('click', function () {
+                                showEditModal(product);
+                            });
+                            actionCell.append(editBtn);
+
+                            var deleteBtn = $('<button class="btn btn-danger btn-sm deleteBtn">Delete</button>');
+                            deleteBtn.on('click', function () {
+                                deleteProduct(product.Id);
+                            });
+                            actionCell.append(deleteBtn);
+
+                            row.append(actionCell);
+                            productTable.append(row);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+
+            function showEditModal(product) {
+                $('#updateProductId').val(product.Id);
+                $('#updateProductName').val(product.Name);
+                $('#updateProductPrice').val(product.Price);
+                $('#updateProductPublishDate').val(product.PublishDate);
+                $('#updateProductStatus').val(product.Status);
+                $('#updateProductModal').modal('show');
+            }
+
+            function deleteProduct(productId) {
+                var confirmation = confirm("Are you sure you want to delete the product with ID: " + productId + "?");
+                if (confirmation) {
+                    $.ajax({
+                        url: '/api/ProductController/Delete?id=' + productId,
+                        type: 'DELETE',
+                        dataType: 'json',
+                        success: function () {
+                            getProducts(); // Refresh the table after successful deletion
+                        },
+                        error: function (xhr, status, error) {
+                            console.log(xhr.responseText);
+                        }
+                    });
+                }
+            }
+
+            $('#searchBtn').on('click', function () {
+                getProducts();
+            });
+
+            $('#updateProductBtn').on('click', function () {
+                var productId = $('#updateProductId').val();
+                var name = $('#updateProductName').val();
+                var price = $('#updateProductPrice').val();
+                var publishDate = $('#updateProductPublishDate').val();
+                var status = $('#updateProductStatus').val();
+
+                var productData = {
+                    Id: productId,
+                    Name: name,
+                    Price: price,
+                    PublishDate: publishDate,
+                    Status: status
+                };
+
+                $.ajax({
+                    url: '/api/ProductController/Update',
+                    type: 'PUT',
+                    dataType: 'json',
+                    data: productData,
+                    success: function () {
+                        $('#updateProductModal').modal('hide');
+                        getProducts(); // Refresh the table after successful update
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            });
+
+            // Sort table by column on header click
+            $('#productTable').on('click', 'th.sortable', function () {
+                var sortby = $(this).data('sortby');
+                var sortdir = $(this).hasClass('asc') ? 'desc' : 'asc';
+
+                $('#productTable th.sortable').removeClass('asc desc');
+                $(this).addClass(sortdir);
+
+                var searchParams = {
+                    Name: $('#nameInput').val(),
+                    Price: $('#priceInput').val(),
+                    Status: $('#statusSelect').val(),
+                    SortBy: sortby,
+                    SortDir: sortdir
+                };
+
+                $.ajax({
+                    url: '/api/ProductController/Search',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: searchParams,
+                    success: function (data) {
+                        var productTable = $('#productTable').find('tbody');
+                        productTable.empty();
+
+                        // Display the sorted products in the table
+                        $.each(data, function (index, product) {
+                            var row = $('<tr></tr>');
+                            row.append('<td class="editable" data-field="Name">' + product.Name + '</td>');
+                            row.append('<td class="editable" data-field="Price">' + product.Price + '</td>');
+                            row.append('<td class="editable" data-field="PublishDate">' + product.PublishDate + '</td>');
+                            row.append('<td>' + product.Status + '</td>');
+
+                            var actionCell = $('<td></td>');
+
+                            var editBtn = $('<button class="btn btn-primary btn-sm editBtn">Edit</button>');
+                            editBtn.on('click', function () {
+                                showEditModal(product);
+                            });
+                            actionCell.append(editBtn);
+
+                            var deleteBtn = $('<button class="btn btn-danger btn-sm deleteBtn">Delete</button>');
+                            deleteBtn.on('click', function () {
+                                deleteProduct(product.Id);
+                            });
+                            actionCell.append(deleteBtn);
+
+                            row.append(actionCell);
+                            productTable.append(row);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            });
+
+            // Initial table load
+            getProducts();
+        });
+    </script>
+</body>
+</html>

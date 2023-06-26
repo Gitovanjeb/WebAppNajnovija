@@ -1,0 +1,51 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Proizvod List</title>
+    <link href="../Content/bootstrap.min.css" rel="stylesheet" />
+    <script src="../Scripts/jquery-3.4.1.min.js"></script>
+    <script src="../Scripts/bootstrap.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div id="proizvodContainer" class="row"></div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '/api/Proizvodi/Get', 
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    // 'data' will contain the response from the server
+
+                    // Iterate over each object in the response
+                    $.each(data, function (index, proizvod) {
+                        // Create a new HTML element to display the proizvod's details
+                        var proizvodElement = $('<div class="col-md-6"></div>');
+
+                        // Append the proizvod's properties to the element
+                        proizvodElement.append('<p><strong>ID:</strong> ' + proizvod.Id + '</p>');
+                        proizvodElement.append('<p><strong>Ime:</strong> ' + proizvod.Ime + '</p>');
+                        proizvodElement.append('<p><strong>Cena:</strong> ' + proizvod.Cena + '</p>');
+                        proizvodElement.append('<p><strong>Kolicina:</strong> ' + proizvod.Kolicina + '</p>');
+                        //proizvodElement.append('<p><strong>Opis:</strong> ' + proizvod.opis + '</p>');
+                        //proizvodElement.append('<p><strong>Slika:</strong> ' + proizvod.slika + '</p>');
+                        //proizvodElement.append('<p><strong>Datum:</strong> ' + proizvod.datum + '</p>');
+                        //proizvodElement.append('<p><strong>Grad:</strong> ' + proizvod.grad + '</p>');
+
+                        // Append the proizvod element to the container
+                        $('#proizvodContainer').append(proizvodElement);
+                    });
+                },
+                error: function (xhr, status, error) {
+                    // Handle the error if the request fails
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+

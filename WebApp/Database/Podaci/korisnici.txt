@@ -1,0 +1,4 @@
+Kurac,123,Zivansatatata111,Ikicll3333,Musko,zivanikic@gmail.com,6/7/2023 12:00:00 AM,Kupac,||,||,True
+Admin,123,admin,admin,Musko,zivanikic@gmail.com,6/7/2023 12:00:00 AM,Administrator,||,||,False
+novi,123,novi,novovic,Musko,zivanikic@gmail.com,5/29/2023 12:00:00 AM,Kupac,||,||,False
+user2,123,User2,ser,Musko,zivanikic@gmail.com,6/6/2023 12:00:00 AM,Kupac,||,||,False

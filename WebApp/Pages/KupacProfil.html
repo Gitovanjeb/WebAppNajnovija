@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile Page</title>
+    <link href="../Content/bootstrap.min.css" rel="stylesheet" />
+
+    <script src="../Scripts/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jwt-decode/2.2.0/jwt-decode.min.js"></script>
+    <script src="../Scripts/jwt-decode.js"></script>
+</head>
+<body>
+    <h1>Profile Page</h1>
+
+    <div id="profileInfo">
+        <h3>User Information</h3>
+        <p id="username"></p>
+        <p id="name"></p>
+        <p id="surname"></p>
+        <p id="email"></p>
+        <p id="dateOfBirth"></p>
+    </div>
+
+    <div id="updateForm" style="display: none;">
+        <h3>Update User Information</h3>
+        <input type="text" id="updatedName" placeholder="Name">
+        <input type="text" id="updatedSurname" placeholder="Surname">
+        <input type="password" id="updatedPassword" placeholder="Password">
+        <input type="email" id="updatedEmail" placeholder="Email">
+        <input type="date" id="updatedDateOfBirth" placeholder="Date of Birth">
+        <button id="updateButton">Update</button>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            var token = localStorage.getItem('token');
+            console.log(token);
+            if (token) {
+                var decodedToken = jwt_decode(token);
+                var username = decodedToken.Name;
+                //var userType = decodedToken.UserType;
+                $('#username').text('Username: ' + username);
+                
+                    $.ajax({
+                        url: '/api/KupacProfil/Get?username=' + username,
+                        type: 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        },
+                        success: function (data) {
+                            $('#name').text('Name: ' + data.Ime);
+                            $('#surname').text('Surname: ' + data.Prezime);
+                            $('#email').text('Email: ' + data.Email);
+                            $('#dateOfBirth').text('Date of Birth: ' + data.DatumRodjenja);
+                            $('#updateForm').show();
+                        },
+                        error: function () {
+                            alert('Error occurred while retrieving user profile.');
+                        }
+                    });
+                } else {
+                    alert('Token not found in local storage.');
+                }
+
+                $('#updateButton').click(function () {
+                    var updatedUser = {
+                        Ime: $('#updatedName').val(),
+                        Prezime: $('#updatedSurname').val(),
+                        Lozinka: $('#updatedPassword').val(),
+                        Email: $('#updatedEmail').val(),
+                        DatumRodjenja: $('#updatedDateOfBirth').val(),
+                        KorisnickoIme: username
+                    };
+
+                    $.ajax({
+                        url: '/api/KupacProfil/Put',
+                        type: 'PUT',
+                        data: JSON.stringify(updatedUser),
+                        contentType: 'application/json',
+                        success: function (data) {
+                            $('#name').text('Name: ' + data.Ime);
+                            $('#surname').text('Surname: ' + data.Prezime);
+                            $('#email').text('Email: ' + data.Email);
+                            $('#dateOfBirth').text('Date of Birth: ' + data.DatumRodjenja);
+                            alert('User profile updated successfully.');
+                        },
+                        error: function () {
+                            alert('Error occurred while updating user profile.');
+                        }
+                    });
+                
+                });
+            
+        });
+    </script>
+</body>
+</html>

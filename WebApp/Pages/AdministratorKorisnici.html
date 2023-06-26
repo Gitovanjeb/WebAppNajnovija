@@ -1,0 +1,254 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>User Search and Sorting</title>
+    <link href="../Content/bootstrap.min.css" rel="stylesheet" />
+    <style>
+        .form-row {
+            margin-bottom: 10px;
+        }
+    </style>
+    <script src="../Scripts/jquery-3.4.1.min.js"></script>
+    <script src="../Scripts/bootstrap.min.js"></script>
+</head>
+<body>
+    <h1>User Search and Sorting</h1>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-md-2 form-row">
+                <label for="nameInput">Name:</label>
+                <input type="text" id="nameInput" class="form-control" />
+            </div>
+
+            <div class="col-md-2 form-row">
+                <label for="surnameInput">Surname:</label>
+                <input type="text" id="surnameInput" class="form-control" />
+            </div>
+
+            <div class="col-md-2 form-row">
+                <label for="fromDateInput">From Date of Birth:</label>
+                <input type="date" id="fromDateInput" class="form-control" />
+            </div>
+
+            <div class="col-md-2 form-row">
+                <label for="toDateInput">To Date of Birth:</label>
+                <input type="date" id="toDateInput" class="form-control" />
+            </div>
+
+            <div class="col-md-2 form-row">
+                <label for="roleSelect">Role:</label>
+                <select id="roleSelect" class="form-control">
+                    <option value="">All</option>
+                    <option value="0">Kupac</option>
+                    <option value="1">Prodavac</option>
+                </select>
+            </div>
+
+
+            <div class="col-md-2 form-row">
+                <label>&nbsp;</label>
+                <button id="searchBtn" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+
+        <h3>Users</h3>
+        <table id="userTable" class="table table-bordered">
+            <thead>
+                <tr>
+                    <th class="sortable" data-sortby="Username">Username</th>
+                    <th class="sortable" data-sortby="Name">Name</th>
+                    <th class="sortable" data-sortby="Surname">Surname</th>
+                    <th class="sortable" data-sortby="DateOfBirth">Date of Birth</th>
+                    <th class="sortable" data-sortby="Role">Role</th>
+                    <th class="sortable" data-sortby="Password">Password</th>
+                    <th class="sortable" data-sortby="IsDeleted">Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal for User Update -->
+    <div class="modal fade" id="updateUserModal" tabindex="-1" role="dialog" aria-labelledby="updateUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateUserModalLabel">Update User</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="updateUserId" />
+                    <div class="form-group">
+                        <label for="updateUserName">Name:</label>
+                        <input type="text" id="updateUserName" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="updateUserSurname">Surname:</label>
+                        <input type="text" id="updateUserSurname" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="updateUserDateOfBirth">Date of Birth:</label>
+                        <input type="date" id="updateUserDateOfBirth" class="form-control" />
+                    </div>
+                    <div class="form-group">
+                        <label for="updateUserRole">Role:</label>
+                        <select id="updateUserRole" class="form-control">
+                            <option value="0">Kupac</option>
+                            <option value="1">Prodavac</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="updateUserPassword">Password:</label>
+                        <input type="password" id="updateUserPassword" class="form-control" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="updateUserBtn">Update</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            function getUsers() {
+                var searchParams = {
+                    Ime: $('#nameInput').val(),
+                    Prezime: $('#surnameInput').val(),
+                    OdDatumRodjenja: $('#fromDateInput').val(),
+                    DoDatumRodjenja: $('#toDateInput').val(),
+                    Uloga: $('#roleSelect').val(),
+                    Lozinka: $('#passwordInput').val()
+                };
+
+                $.ajax({
+                    url: '/api/AdministratorController/Search',
+                    type: 'GET',
+                    dataType: 'json',
+                    data: searchParams,
+                    success: function (data) {
+                        var userTable = $('#userTable').find('tbody');
+                        userTable.empty();
+
+                        // Display the users in the table
+                        $.each(data, function (index, user) {
+                            // Skip users with userType 2
+                            if (user.Uloga === 2) {
+                                return true; // Continue to the next iteration
+                            }
+
+                            var row = $('<tr></tr>');
+                            row.append('<td>' + user.KorisnickoIme + '</td>');
+                            row.append('<td class="editable" data-field="Ime">' + user.Ime + '</td>');
+                            row.append('<td class="editable" data-field="Surname">' + user.Prezime + '</td>');
+                            row.append('<td class="editable" data-field="DateOfBirth">' + user.DatumRodjenja + '</td>');
+
+                            var role = '';
+                            if (user.Uloga === 0) {
+                                role = 'Kupac';
+                            } else if (user.Uloga === 1) {
+                                role = 'Prodavac';
+                            }
+                            row.append('<td class="editable" data-field="Role">' + role + '</td>');
+                            row.append('<td class="editable" data-field="DateOfBirth">' + user.Lozinka + '</td>');
+                            var status = user.IsDeleted ? 'Deactivated' : 'Active';
+                            row.append('<td>' + status + '</td>');
+
+                            var actionCell = $('<td></td>');
+                            if (!user.IsDeleted) {
+                                var editBtn = $('<button class="btn btn-primary btn-sm editBtn">Edit</button>');
+                                editBtn.on('click', function () {
+                                    showEditModal(user);
+                                });
+                                actionCell.append(editBtn);
+
+                                var deleteBtn = $('<button class="btn btn-danger btn-sm deleteBtn">Delete</button>');
+                                deleteBtn.on('click', function () {
+                                    deleteUser(user.KorisnickoIme);
+                                });
+                                actionCell.append(deleteBtn);
+                            }
+
+                            row.append(actionCell);
+                            userTable.append(row);
+                        });
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            }
+
+            function showEditModal(user) {
+                $('#updateUserId').val(user.KorisnickoIme);
+                $('#updateUserName').val(user.Ime);
+                $('#updateUserSurname').val(user.Prezime);
+                $('#updateUserDateOfBirth').val(user.DatumRodjenja);
+                $('#updateUserRole').val(user.Uloga);
+                $('#updateUserModal').modal('show');
+            }
+
+            function deleteUser(username) {
+                var confirmation = confirm("Are you sure you want to delete the user with the username '" + username + "'?");
+                if (confirmation) {
+                    $.ajax({
+                        url: '/api/AdministratorController/Delete?username=' + username,
+                        type: 'DELETE',
+                        //dataType: 'json',
+                        data: { username: username },
+                        success: function () {
+                            getUsers();
+                        },
+                        error: function (xhr, status, error) {
+                            console.log(xhr.responseText);
+                        }
+                    });
+                }
+            }
+
+            $('#searchBtn').on('click', function () {
+                getUsers();
+            });
+
+            $('#updateUserBtn').on('click', function () {
+                var userId = $('#updateUserId').val();
+                var name = $('#updateUserName').val();
+                var surname = $('#updateUserSurname').val();
+                var dateOfBirth = $('#updateUserDateOfBirth').val();
+                var role = $('#updateUserRole').val();
+                var password = $('#updateUserPassword').val();
+
+                var userData = {
+                    KorisnickoIme: userId,
+                    Ime: name,
+                    Prezime: surname,
+                    DatumRodjenja: dateOfBirth,
+                    Uloga: role,
+                    Lozinka: password
+                };
+
+                $.ajax({
+                    url: '/api/AdministratorController/Put',
+                    type: 'PUT',
+                    data: userData,
+                    success: function () {
+                        getUsers();
+                        $('#updateUserModal').modal('hide');
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                    }
+                });
+            });
+
+            getUsers();
+        });
+    </script>
+</body>
+</html>
